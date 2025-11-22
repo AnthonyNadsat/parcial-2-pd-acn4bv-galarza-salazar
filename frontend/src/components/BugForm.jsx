@@ -59,7 +59,6 @@ export default function BugForm({ onBugCreated, onBugUpdated, bugToEdit, loading
 
     return (
         <form className="bug-form" onSubmit={handleSubmit}>
-            <h2>{bugToEdit ? 'Editar bug' : 'Reportar nuevo bug'}</h2>
 
             <input
                 type="text"
