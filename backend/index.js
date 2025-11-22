@@ -7,7 +7,7 @@ const logger = require('./middlewares/logger');
 const app = express();
 const PORT = 3000;
 
-// Middleware de configuración global
+// Middleware global
 app.use(cors());
 app.use(express.json());
 app.use(logger);
@@ -15,7 +15,7 @@ app.use(logger);
 // Ruta del archivo JSON
 const bugsFilePath = path.join(__dirname, 'data', 'bugs.json');
 
-// Helper para el archivo JSON
+// Helper para leer archivo
 function leerBugs() {
     if (!fs.existsSync(bugsFilePath)) {
         fs.writeFileSync(bugsFilePath, '[]', 'utf-8');
@@ -24,11 +24,12 @@ function leerBugs() {
     return JSON.parse(data);
 }
 
+// Helper para escribir archivo
 function guardarBugs(bugs) {
     fs.writeFileSync(bugsFilePath, JSON.stringify(bugs, null, 2), 'utf-8');
 }
 
-// Middleware de validar
+// Middleware validar bug
 function validarBug(req, res, next) {
     const { nombreJuego, plataforma, tipo, gravedad, descripcion } = req.body;
 
@@ -49,54 +50,9 @@ app.get('/api/bugs', (req, res) => {
     res.json(bugs);
 });
 
-// POST
+//  POST
 app.post('/api/bugs', validarBug, (req, res) => {
     const bugs = leerBugs();
-
-    // DELETE
-    app.delete('/api/bugs/:id', (req, res) => {
-        const id = parseInt(req.params.id, 10);
-        let bugs = leerBugs();
-
-        const existe = bugs.some(bug => bug.id === id);
-        if (!existe) {
-            return res.status(404).json({ message: 'Bug no encontrado' });
-        }
-
-        bugs = bugs.filter(bug => bug.id !== id);
-        guardarBugs(bugs);
-
-        res.json({ message: 'Bug eliminado correctamente' });
-    });
-
-    // PUT
-    app.put('/api/bugs/:id', validarBug, (req, res) => {
-        const id = parseInt(req.params.id, 10);
-        const bugs = leerBugs();
-
-        const index = bugs.findIndex(bug => bug.id === id);
-
-        if (index === -1) {
-            return res.status(404).json({ message: 'Bug no encontrado' });
-        }
-
-        bugs[index] = {
-            ...bugs[index], // conservamos id y fecha
-            nombreJuego: req.body.nombreJuego,
-            plataforma: req.body.plataforma,
-            tipo: req.body.tipo,
-            gravedad: req.body.gravedad,
-            descripcion: req.body.descripcion
-        };
-
-        guardarBugs(bugs);
-
-        res.json({
-            message: 'Bug actualizado correctamente',
-            data: bugs[index]
-        });
-    });
-
 
     const nuevoBug = {
         id: Date.now(),
@@ -117,7 +73,51 @@ app.post('/api/bugs', validarBug, (req, res) => {
     });
 });
 
-// Inicializar servidor express
+// DELETE
+app.delete('/api/bugs/:id', (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    let bugs = leerBugs();
+
+    const existe = bugs.some(bug => bug.id === id);
+    if (!existe) {
+        return res.status(404).json({ message: 'Bug no encontrado' });
+    }
+
+    bugs = bugs.filter(bug => bug.id !== id);
+    guardarBugs(bugs);
+
+    res.json({ message: 'Bug eliminado correctamente' });
+});
+
+
+// PUT
+app.put('/api/bugs/:id', validarBug, (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const bugs = leerBugs();
+    const index = bugs.findIndex(bug => bug.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({ message: 'Bug no encontrado' });
+    }
+
+    bugs[index] = {
+        ...bugs[index],
+        nombreJuego: req.body.nombreJuego,
+        plataforma: req.body.plataforma,
+        tipo: req.body.tipo,
+        gravedad: req.body.gravedad,
+        descripcion: req.body.descripcion
+    };
+
+    guardarBugs(bugs);
+
+    res.json({
+        message: 'Bug actualizado correctamente',
+        data: bugs[index]
+    });
+});
+
+//   Inicializar servidor
 app.listen(PORT, () => {
     console.log(`Servidor Express inicializado en http://localhost:${PORT}`);
 });

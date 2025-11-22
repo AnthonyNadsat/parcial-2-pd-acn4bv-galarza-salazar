@@ -3,7 +3,6 @@ import BugForm from "../components/BugForm";
 import { createBug } from "../services/api";
 import "./Home.css";
 
-
 export default function Home() {
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
@@ -15,13 +14,12 @@ export default function Home() {
             setErrorMsg("");
             setSuccessMsg("");
 
-            const result = await createBug(bugData);
+            await createBug(bugData);
 
             setSuccessMsg("Bug reportado correctamente");
+
         } catch (err) {
-            setErrorMsg(
-                err.message || "Error al reportar el bug"
-            );
+            setErrorMsg(err.message || "Error al reportar el bug");
         } finally {
             setLoading(false);
 
@@ -39,7 +37,12 @@ export default function Home() {
             {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
             {successMsg && <div className="alert alert-success">{successMsg}</div>}
 
-            <BugForm onBugCreated={handleCreate} loading={loading} />
+            <BugForm
+                loading={loading}
+                onBugCreated={handleCreate}
+                bugToEdit={null}
+                onBugUpdated={() => {}}
+            />
         </div>
     );
 }

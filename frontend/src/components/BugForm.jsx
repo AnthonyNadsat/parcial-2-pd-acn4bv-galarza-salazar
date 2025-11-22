@@ -19,12 +19,6 @@ export default function BugForm({ onBugCreated, onBugUpdated, bugToEdit, loading
         }
     }, [bugToEdit]);
 
-    useEffect(() => {
-        if (bugToEdit) {
-            if (typeof setErrorMsg === "function") setErrorMsg("");
-        }
-    }, [bugToEdit]);
-
 
     const limpiarFormulario = () => {
         setNombreJuego('');
