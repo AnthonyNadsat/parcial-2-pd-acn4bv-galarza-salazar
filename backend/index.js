@@ -43,15 +43,60 @@ function validarBug(req, res, next) {
     next();
 }
 
-// GET /api/bugs
+// GET
 app.get('/api/bugs', (req, res) => {
     const bugs = leerBugs();
     res.json(bugs);
 });
 
-// POST /api/bugs
+// POST
 app.post('/api/bugs', validarBug, (req, res) => {
     const bugs = leerBugs();
+
+    // DELETE
+    app.delete('/api/bugs/:id', (req, res) => {
+        const id = parseInt(req.params.id, 10);
+        let bugs = leerBugs();
+
+        const existe = bugs.some(bug => bug.id === id);
+        if (!existe) {
+            return res.status(404).json({ message: 'Bug no encontrado' });
+        }
+
+        bugs = bugs.filter(bug => bug.id !== id);
+        guardarBugs(bugs);
+
+        res.json({ message: 'Bug eliminado correctamente' });
+    });
+
+    // PUT
+    app.put('/api/bugs/:id', validarBug, (req, res) => {
+        const id = parseInt(req.params.id, 10);
+        const bugs = leerBugs();
+
+        const index = bugs.findIndex(bug => bug.id === id);
+
+        if (index === -1) {
+            return res.status(404).json({ message: 'Bug no encontrado' });
+        }
+
+        bugs[index] = {
+            ...bugs[index], // conservamos id y fecha
+            nombreJuego: req.body.nombreJuego,
+            plataforma: req.body.plataforma,
+            tipo: req.body.tipo,
+            gravedad: req.body.gravedad,
+            descripcion: req.body.descripcion
+        };
+
+        guardarBugs(bugs);
+
+        res.json({
+            message: 'Bug actualizado correctamente',
+            data: bugs[index]
+        });
+    });
+
 
     const nuevoBug = {
         id: Date.now(),

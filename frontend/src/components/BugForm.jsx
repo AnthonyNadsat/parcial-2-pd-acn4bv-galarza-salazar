@@ -1,117 +1,104 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-const initialState = {
-    nombreJuego: '',
-    plataforma: '',
-    tipo: '',
-    gravedad: 'BAJA',
-    descripcion: '',
-};
+export default function BugForm({ onBugCreated, onBugUpdated, bugToEdit, loading }) {
+    const [nombreJuego, setNombreJuego] = useState('');
+    const [plataforma, setPlataforma] = useState('');
+    const [tipo, setTipo] = useState('');
+    const [gravedad, setGravedad] = useState('Baja');
+    const [descripcion, setDescripcion] = useState('');
 
-export default function BugForm({ onBugCreated, loading }) {
-    const [formData, setFormData] = useState(initialState);
-    const [errorMsg, setErrorMsg] = useState('');
+    useEffect(() => {
+        if (bugToEdit) {
+            setNombreJuego(bugToEdit.nombreJuego);
+            setPlataforma(bugToEdit.plataforma);
+            setTipo(bugToEdit.tipo);
+            setGravedad(bugToEdit.gravedad);
+            setDescripcion(bugToEdit.descripcion);
+        } else {
+            limpiarFormulario();
+        }
+    }, [bugToEdit]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+    useEffect(() => {
+        if (bugToEdit) {
+            if (typeof setErrorMsg === "function") setErrorMsg("");
+        }
+    }, [bugToEdit]);
+
+
+    const limpiarFormulario = () => {
+        setNombreJuego('');
+        setPlataforma('');
+        setTipo('');
+        setGravedad('Baja');
+        setDescripcion('');
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        setErrorMsg('');
 
-        if (
-            !formData.nombreJuego ||
-            !formData.plataforma ||
-            !formData.tipo ||
-            !formData.gravedad ||
-            !formData.descripcion
-        ) {
-            setErrorMsg('Por favor llená todos los campos');
-            return;
+        const bugData = {
+            nombreJuego,
+            plataforma,
+            tipo,
+            gravedad,
+            descripcion,
+        };
+
+        // Editar
+        if (bugToEdit) {
+            onBugUpdated({ ...bugData, id: bugToEdit.id });
+        }
+        // Crear
+        else {
+            onBugCreated(bugData);
         }
 
-        if (formData.descripcion.length > 500) {
-            setErrorMsg('La descripción no puede superar los 500 caracteres');
-            return;
-        }
-
-        await onBugCreated(formData);
-        setFormData(initialState);
+        limpiarFormulario();
     };
 
     return (
-        <form onSubmit={handleSubmit} className="bug-form">
-            <h2>Reportar nuevo bug</h2>
+        <form className="bug-form" onSubmit={handleSubmit}>
+            <h2>{bugToEdit ? 'Editar bug' : 'Reportar nuevo bug'}</h2>
 
-            {errorMsg && <p className="error">{errorMsg}</p>}
+            <input
+                type="text"
+                placeholder="Juego"
+                value={nombreJuego}
+                onChange={(e) => setNombreJuego(e.target.value)}
+            />
 
-            <div>
-                <label>Juego</label>
-                <input
-                    name="nombreJuego"
-                    value={formData.nombreJuego}
-                    onChange={handleChange}
-                />
-            </div>
+            <select value={plataforma} onChange={(e) => setPlataforma(e.target.value)}>
+                <option value="">Seleccionar...</option>
+                <option value="PC">PC</option>
+                <option value="PlayStation 5">PlayStation 5</option>
+                <option value="Xbox Series">Xbox Series</option>
+                <option value="Nintendo Switch">Nintendo Switch</option>
+                <option value="Android">Android</option>
+                <option value="iOS">iOS</option>
+            </select>
 
-            <div>
-                <label>Plataforma</label>
-                <select
-                    name="plataforma"
-                    value={formData.plataforma}
-                    onChange={handleChange}
-                >
-                    <option value="">Seleccionar...</option>
-                    <option value="PC">PC</option>
-                    <option value="PlayStation 5">PlayStation 5</option>
-                    <option value="Xbox Series">Xbox Series</option>
-                    <option value="Nintendo Switch">Nintendo Switch</option>
-                    <option value="Android">Android</option>
-                    <option value="iOS">iOS</option>
-                </select>
-            </div>
+            <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
+                <option value="">Seleccionar...</option>
+                <option value="Gráfico">Gráfico</option>
+                <option value="Audio">Audio</option>
+                <option value="Gameplay">Gameplay</option>
+            </select>
 
-            <div>
-                <label>Tipo</label>
-                <select
-                    name="tipo"
-                    value={formData.tipo}
-                    onChange={handleChange}
-                >
-                    <option value="">Seleccionar...</option>
-                    <option value="Gráfico">Gráfico</option>
-                    <option value="Audio">Audio</option>
-                    <option value="Gameplay">Gameplay</option>
-                </select>
-            </div>
+            <select value={gravedad} onChange={(e) => setGravedad(e.target.value)}>
+                <option value="Baja">Baja</option>
+                <option value="Media">Media</option>
+                <option value="Alta">Alta</option>
+            </select>
 
-            <div>
-                <label>Gravedad</label>
-                <select
-                    name="gravedad"
-                    value={formData.gravedad}
-                    onChange={handleChange}
-                >
-                    <option value="BAJA">Baja</option>
-                    <option value="MEDIA">Media</option>
-                    <option value="ALTA">Alta</option>
-                </select>
-            </div>
-
-            <div>
-                <label>Descripción</label>
-                <textarea
-                    name="descripcion"
-                    value={formData.descripcion}
-                    onChange={handleChange}
-                    maxLength={500}
-                />
-            </div>
+            <textarea
+                placeholder="Descripción"
+                value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
+            />
 
             <button type="submit" disabled={loading}>
-                {loading ? 'Guardando...' : 'Reportar bug'}
+                {bugToEdit ? 'Guardar cambios' : 'Reportar bug'}
             </button>
         </form>
     );
