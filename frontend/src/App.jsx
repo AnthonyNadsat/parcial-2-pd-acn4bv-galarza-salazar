@@ -1,35 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import BugForm from './components/BugForm';
+import BugList from './components/BugList';
+import { fetchBugs, createBug } from './services/api';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+    const [bugs, setBugs] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [loadingList, setLoadingList] = useState(true);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [successMsg, setSuccessMsg] = useState('');
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    const cargarBugs = async () => {
+        try {
+            setLoadingList(true);
+            const data = await fetchBugs();
+            setBugs(data);
+        } catch (err) {
+            setErrorMsg('Error al cargar los bugs');
+        } finally {
+            setLoadingList(false);
+        }
+    };
+
+    useEffect(() => {
+        cargarBugs();
+    }, []);
+
+    const handleCreateBug = async (bugData) => {
+        try {
+            setLoading(true);
+            setErrorMsg('');
+            setSuccessMsg('');
+            const result = await createBug(bugData);
+
+            setBugs(prev => [...prev, result.data]);
+            setSuccessMsg('Bug creado correctamente');
+        } catch (error) {
+            setErrorMsg(error.message);
+        } finally {
+            setLoading(false);
+            setTimeout(() => setSuccessMsg(''), 2000);
+        }
+    };
+
+    return (
+        <div className="app-container">
+            <h1>BugLog</h1>
+
+            {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
+            {successMsg && <div className="alert alert-success">{successMsg}</div>}
+
+            <BugForm onBugCreated={handleCreateBug} loading={loading} />
+
+            <hr />
+
+            <h2>Lista de bugs</h2>
+
+            {loadingList ? <p>Cargando...</p> : <BugList bugs={bugs} />}
+        </div>
+    );
 }
-
-export default App

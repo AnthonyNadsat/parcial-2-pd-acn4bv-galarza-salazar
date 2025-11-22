@@ -1,3 +1,5 @@
+const API_URL = 'http://localhost:3000/api/bugs';
+
 export async function fetchBugs() {
     const res = await fetch(API_URL);
     if (!res.ok) throw new Error('Error al obtener bugs');
@@ -13,8 +15,7 @@ export async function createBug(bugData) {
 
     if (!res.ok) {
         const errorBody = await res.json().catch(() => ({}));
-        const msg = errorBody.message || 'Error al crear bug';
-        throw new Error(msg);
+        throw new Error(errorBody.message || 'Error al crear bug');
     }
 
     return res.json();
