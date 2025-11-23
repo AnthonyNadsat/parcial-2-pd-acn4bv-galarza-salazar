@@ -8,6 +8,8 @@ export default function BugForm({ onBugCreated, onBugUpdated, bugToEdit, loading
     const [gravedad, setGravedad] = useState('Baja');
     const [descripcion, setDescripcion] = useState('');
 
+    const [errors, setErrors] = useState([]); // <-- NUEVO
+
     useEffect(() => {
         if (bugToEdit) {
             setNombreJuego(bugToEdit.nombreJuego);
@@ -15,6 +17,7 @@ export default function BugForm({ onBugCreated, onBugUpdated, bugToEdit, loading
             setTipo(bugToEdit.tipo);
             setGravedad(bugToEdit.gravedad);
             setDescripcion(bugToEdit.descripcion);
+            setErrors([]); // limpiamos errores si está editando
         } else {
             limpiarFormulario();
         }
@@ -26,10 +29,44 @@ export default function BugForm({ onBugCreated, onBugUpdated, bugToEdit, loading
         setTipo('');
         setGravedad('Baja');
         setDescripcion('');
+        setErrors([]);
+    };
+
+    // -------------------------
+    // VALIDACIONES (NUEVO)
+    // -------------------------
+    const validarFormulario = () => {
+        const newErrors = [];
+
+        if (!nombreJuego.trim()) {
+            newErrors.push("El nombre del juego es obligatorio.");
+        } else if (nombreJuego.trim().length < 2) {
+            newErrors.push("El nombre del juego debe tener al menos 2 caracteres.");
+        }
+
+        if (!plataforma) {
+            newErrors.push("Debe seleccionar una plataforma.");
+        }
+
+        if (!tipo) {
+            newErrors.push("Debe seleccionar un tipo de bug.");
+        }
+
+        if (!descripcion.trim()) {
+            newErrors.push("La descripción es obligatoria.");
+        } else if (descripcion.trim().length < 5) {
+            newErrors.push("La descripción debe tener mínimo 5 caracteres.");
+        }
+
+        setErrors(newErrors);
+        return newErrors.length === 0;
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // VALIDACIÓN
+        if (!validarFormulario()) return;
 
         const bugData = { nombreJuego, plataforma, tipo, gravedad, descripcion };
 
@@ -44,6 +81,15 @@ export default function BugForm({ onBugCreated, onBugUpdated, bugToEdit, loading
 
     return (
         <form className="bug-form" id="bugForm" onSubmit={handleSubmit}>
+
+            {/* Mostrar errores (NUEVO) */}
+            {errors.length > 0 && (
+                <div className="error-box">
+                    {errors.map((err, index) => (
+                        <p key={index} className="error-text">{err}</p>
+                    ))}
+                </div>
+            )}
 
             <input
                 type="text"

@@ -57,7 +57,7 @@ body::before {
     background-size: cover;
     background-position: center;
     filter: brightness(0.45) contrast(1.05); /* más suave */
-    opacity: 0.05; /* baja el brillo que se veía blanco */
+    opacity: 0.15; /* baja el brillo que se veía blanco */
     z-index: -1;
 }
 
@@ -356,5 +356,19 @@ button:disabled,
     .card {
         padding: var(--space-md);
     }
+}
+
+.error-box {
+    background: #ffe1e1;
+    border-left: 4px solid #d10000;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.error-text {
+    color: #a60000;
+    margin: 3px 0;
+    font-size: 0.9rem;
 }
 
