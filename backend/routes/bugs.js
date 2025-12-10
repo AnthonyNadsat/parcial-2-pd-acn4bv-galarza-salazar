@@ -7,14 +7,19 @@ import {
     deleteBug
 } from "../controllers/bugsController.js";
 
+import { bugValidationRules, handleValidationErrors } from "../middlewares/validateBug.js";
 
 const router = express.Router();
 
 router.get("/", getBugs);
-router.post("/", createBug);
 
-// ADMIN
-router.put("/:id", authAdmin, updateBug);
+// Validacion POST
+router.post("/", bugValidationRules, handleValidationErrors, createBug);
+
+// Validacion PUT (admin)
+router.put("/:id", authAdmin, bugValidationRules, handleValidationErrors, updateBug);
+
+// DELETE (admin)
 router.delete("/:id", authAdmin, deleteBug);
 
 export default router;
