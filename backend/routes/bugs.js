@@ -1,25 +1,20 @@
 import express from "express";
-import authAdmin from "../middlewares/authAdmin.js";
 import {
     getBugs,
     createBug,
     updateBug,
     deleteBug
 } from "../controllers/bugsController.js";
-
 import { bugValidationRules, handleValidationErrors } from "../middlewares/validateBug.js";
+import { verifyToken, verifyTokenAndAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.get("/", getBugs);
 
-// Validacion POST
-router.post("/", bugValidationRules, handleValidationErrors, createBug);
+router.post("/", verifyToken, bugValidationRules, handleValidationErrors, createBug);
 
-// Validacion PUT (admin)
-router.put("/:id", authAdmin, bugValidationRules, handleValidationErrors, updateBug);
-
-// DELETE (admin)
-router.delete("/:id", authAdmin, deleteBug);
+router.put("/:id", verifyTokenAndAdmin, bugValidationRules, handleValidationErrors, updateBug);
+router.delete("/:id", verifyTokenAndAdmin, deleteBug);
 
 export default router;
